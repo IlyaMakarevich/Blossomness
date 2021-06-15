@@ -15,17 +15,18 @@ class ViewController: UIViewController {
     @IBOutlet private weak var smallPreviewImageView: UIImageView!
     @IBOutlet private weak var classificationLabel: UILabel!
     
+    
+    private var cameraOutputSnapshot: UIImage!
+    
     //MARK: - Vision Properties
     var visionRecognitionModel: VNCoreMLModel?
     var visionIdentificationModel: VNCoreMLModel?
 
     var recRequest: VNCoreMLRequest?
-    var idRequest: VNCoreMLRequest?
 
     var isInferencing = false
     
     let objectDetectionModel = YOLOv3()
-    let objectIdentificationModel = blossom150classes()
     
     //MARK: - AV properties
     var videoCapture: VideoCapture!
@@ -68,20 +69,41 @@ class ViewController: UIViewController {
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         boundingBoxView.rectHandler = { [weak self] rect in
-            // сюда должен попасть Rect который надо вырезать из AVCaptureVideoPreviewLayer и отправить в updateClassifications()
             guard let rect = rect, let self = self else { return }
-            self.smallPreviewImageView.image = self.cutScreenshot(rect: rect)
+            guard let cameraOutputSnapshot = self.cameraOutputSnapshot else { return }
+            self.smallPreviewImageView.image = self.cropImage(cameraOutputSnapshot, toRect: rect, viewWidth: 100, viewHeight: 100)
         }
-        
     }
     
-    private func cutScreenshot(rect: CGRect) -> UIImage? {
-        print(rect)
-        let renderer = UIGraphicsImageRenderer(size: self.view.bounds.size)
-        let image = renderer.image { ctx in
-            previewView.drawHierarchy(in: self.view.bounds, afterScreenUpdates: true)
+//    private func cutScreenshot(rect: CGRect) -> UIImage? {
+//        #warning("здесь cropped всегда nil непонятно почему")
+//        if let cropped = cameraOutputSnapshot.cgImage?.cropping(to: rect) {
+//            return UIImage(cgImage: cropped)
+//        } else {
+//            return nil
+//        }
+//    }
+    
+    func cropImage(_ inputImage: UIImage, toRect cropRect: CGRect, viewWidth: CGFloat, viewHeight: CGFloat) -> UIImage?
+    {
+        let imageViewScale = max(inputImage.size.width / viewWidth,
+                                 inputImage.size.height / viewHeight)
+
+        // Scale cropRect to handle images larger than shown-on-screen size
+        let cropZone = CGRect(x:cropRect.origin.x * imageViewScale,
+                              y:cropRect.origin.y * imageViewScale,
+                              width:cropRect.size.width * imageViewScale,
+                              height:cropRect.size.height * imageViewScale)
+
+        // Perform cropping in Core Graphics
+        guard let cutImageRef: CGImage = inputImage.cgImage?.cropping(to:cropZone)
+        else {
+            return nil
         }
-        return image
+
+        // Return image to UIImage
+        let croppedImage: UIImage = UIImage(cgImage: cutImageRef)
+        return croppedImage
     }
     
     override func viewWillDisappear(_ animated: Bool) {
@@ -103,6 +125,7 @@ class ViewController: UIViewController {
                                 self.boundingBoxView.predictedObjects = predictions
                             } else {
                                 self.boundingBoxView.predictedObjects = []
+                                self.smallPreviewImageView.image = nil
                             }
                             self.isInferencing = false
                         }
@@ -165,12 +188,12 @@ class ViewController: UIViewController {
 extension ViewController: VideoCaptureDelegate {
     func videoCapture(_ capture: VideoCapture, pixelBuffer: CVPixelBuffer?, timestamp: CMTime) {
         if !self.isInferencing, let pixelBuffer = pixelBuffer {
+            cameraOutputSnapshot = UIImage(ciImage: CIImage(cvPixelBuffer: pixelBuffer))
             self.isInferencing = true
             self.runRequest(pixelBuffer: pixelBuffer)
         }
     }
     
-    //сюда надо отправить кропнутую фотку из рамочки
     func updateClassifications(for image: UIImage) {
         guard let ciImage = CIImage(image: image) else { fatalError("Unable to create \(CIImage.self) from \(image).") }
 

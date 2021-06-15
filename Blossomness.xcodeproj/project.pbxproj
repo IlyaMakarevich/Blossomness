@@ -7,11 +7,11 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		4D5361712678C5B700597E39 /* YOLOv3.mlkitmodel in Sources */ = {isa = PBXBuildFile; fileRef = 4D5361702678C5B700597E39 /* YOLOv3.mlkitmodel */; };
 		4D5361742678C72E00597E39 /* VideoCapture.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D5361732678C72E00597E39 /* VideoCapture.swift */; };
 		4D5361762678C73600597E39 /* BoundingBoxView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D5361752678C73600597E39 /* BoundingBoxView.swift */; };
 		4D5361782678DF3100597E39 /* Status.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D5361772678DF3100597E39 /* Status.swift */; };
 		4D53617A2678E59F00597E39 /* CGImagePropertyOrientation+UIImageOrientation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D5361792678E59F00597E39 /* CGImagePropertyOrientation+UIImageOrientation.swift */; };
+		4D53617E2678F79D00597E39 /* YOLOv3.mlkitmodel in Sources */ = {isa = PBXBuildFile; fileRef = 4D53617D2678F79D00597E39 /* YOLOv3.mlkitmodel */; };
 		4D5BC96E2677914600E91BA8 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D5BC96D2677914600E91BA8 /* AppDelegate.swift */; };
 		4D5BC9702677914600E91BA8 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D5BC96F2677914600E91BA8 /* SceneDelegate.swift */; };
 		4D5BC9722677914600E91BA8 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D5BC9712677914600E91BA8 /* ViewController.swift */; };
@@ -22,11 +22,11 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		4D5361702678C5B700597E39 /* YOLOv3.mlkitmodel */ = {isa = PBXFileReference; lastKnownFileType = file.mlmodel; path = YOLOv3.mlkitmodel; sourceTree = "<group>"; };
 		4D5361732678C72E00597E39 /* VideoCapture.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = VideoCapture.swift; sourceTree = "<group>"; };
 		4D5361752678C73600597E39 /* BoundingBoxView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BoundingBoxView.swift; sourceTree = "<group>"; };
 		4D5361772678DF3100597E39 /* Status.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Status.swift; sourceTree = "<group>"; };
 		4D5361792678E59F00597E39 /* CGImagePropertyOrientation+UIImageOrientation.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "CGImagePropertyOrientation+UIImageOrientation.swift"; sourceTree = "<group>"; };
+		4D53617D2678F79D00597E39 /* YOLOv3.mlkitmodel */ = {isa = PBXFileReference; lastKnownFileType = file.mlmodel; path = YOLOv3.mlkitmodel; sourceTree = "<group>"; };
 		4D5BC96A2677914600E91BA8 /* Blossomness.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Blossomness.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		4D5BC96D2677914600E91BA8 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		4D5BC96F2677914600E91BA8 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
@@ -52,7 +52,7 @@
 		4D5361722678C69100597E39 /* Models */ = {
 			isa = PBXGroup;
 			children = (
-				4D5361702678C5B700597E39 /* YOLOv3.mlkitmodel */,
+				4D53617D2678F79D00597E39 /* YOLOv3.mlkitmodel */,
 				4D5BC981267795B700E91BA8 /* blossom150classes.mlmodel */,
 			);
 			path = Models;
@@ -166,12 +166,12 @@
 				4D5BC982267795B700E91BA8 /* blossom150classes.mlmodel in Sources */,
 				4D5361742678C72E00597E39 /* VideoCapture.swift in Sources */,
 				4D5361762678C73600597E39 /* BoundingBoxView.swift in Sources */,
+				4D53617E2678F79D00597E39 /* YOLOv3.mlkitmodel in Sources */,
 				4D5361782678DF3100597E39 /* Status.swift in Sources */,
 				4D53617A2678E59F00597E39 /* CGImagePropertyOrientation+UIImageOrientation.swift in Sources */,
 				4D5BC9722677914600E91BA8 /* ViewController.swift in Sources */,
 				4D5BC96E2677914600E91BA8 /* AppDelegate.swift in Sources */,
 				4D5BC9702677914600E91BA8 /* SceneDelegate.swift in Sources */,
-				4D5361712678C5B700597E39 /* YOLOv3.mlkitmodel in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -49,14 +49,12 @@ class BoundingBoxView: UIView {
         let transform = CGAffineTransform(scaleX: 1, y: -1).translatedBy(x: 0, y: -1)
         let bgRect = prediction.boundingBox.applying(transform).applying(scale)
         
-        rectHandler?(bgRect)
-        
         let bgView = UIView(frame: bgRect)
         bgView.layer.borderColor = color.cgColor
         bgView.layer.borderWidth = 4
         bgView.backgroundColor = UIColor.clear
         addSubview(bgView)
-        
+                
         let label = UILabel(frame: CGRect(x: 0, y: 0, width: 300, height: 300))
         label.text = labelString ?? "N/A"
         label.font = UIFont.systemFont(ofSize: 13)
@@ -66,5 +64,7 @@ class BoundingBoxView: UIView {
         label.frame = CGRect(x: bgRect.origin.x, y: bgRect.origin.y - label.frame.height,
                              width: label.frame.width, height: label.frame.height)
         addSubview(label)
+        
+        rectHandler?(bgRect)
     }
 }
