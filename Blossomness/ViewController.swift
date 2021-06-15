@@ -82,7 +82,7 @@ class ViewController: UIViewController {
 //        } else {
 //            return nil
 //        }
-//    }
+// /   }
     
     func cropImage(_ inputImage: UIImage, toRect cropRect: CGRect, viewWidth: CGFloat, viewHeight: CGFloat) -> UIImage?
     {
