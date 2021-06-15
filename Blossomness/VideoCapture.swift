@@ -17,10 +17,10 @@ public class VideoCapture: NSObject {
     public var previewLayer: AVCaptureVideoPreviewLayer?
     public weak var delegate: VideoCaptureDelegate?
     public var fps = 15
-    
+
     let captureSession = AVCaptureSession()
     let videoOutput = AVCaptureVideoDataOutput()
-    let queue = DispatchQueue(label: "com.compusight.movedesk.camera-queue")
+    let queue = DispatchQueue(label: "com.blossom.live.recognition")
 
     var lastTimestamp = CMTime()
     
@@ -55,7 +55,8 @@ public class VideoCapture: NSObject {
         self.previewLayer = previewLayer
         
         let settings: [String : Any] = [
-            kCVPixelBufferPixelFormatTypeKey as String: NSNumber(value: kCVPixelFormatType_32BGRA),
+            //kCVPixelBufferPixelFormatTypeKey as String: NSNumber(value: kCVPixelFormatType_32BGRA),
+            kCVPixelBufferPixelFormatTypeKey as String: Int(kCVPixelFormatType_420YpCbCr8BiPlanarFullRange)
         ]
         
         videoOutput.videoSettings = settings

@@ -36,6 +36,11 @@ class BoundingBoxView: UIView {
         
         for prediction in predictions {
             createLabelAndBox(prediction: prediction)
+            
+            let scale = CGAffineTransform.identity.scaledBy(x: 1080, y: 1920)
+            let transform = CGAffineTransform(scaleX: 1, y: -1).translatedBy(x: 0, y: -1)
+            let rect = prediction.boundingBox.applying(transform).applying(scale)
+            rectHandler?(rect)
         }
     }
     
@@ -48,7 +53,7 @@ class BoundingBoxView: UIView {
         let scale = CGAffineTransform.identity.scaledBy(x: bounds.width, y: bounds.height)
         let transform = CGAffineTransform(scaleX: 1, y: -1).translatedBy(x: 0, y: -1)
         let bgRect = prediction.boundingBox.applying(transform).applying(scale)
-        
+                
         let bgView = UIView(frame: bgRect)
         bgView.layer.borderColor = color.cgColor
         bgView.layer.borderWidth = 4
@@ -64,7 +69,5 @@ class BoundingBoxView: UIView {
         label.frame = CGRect(x: bgRect.origin.x, y: bgRect.origin.y - label.frame.height,
                              width: label.frame.width, height: label.frame.height)
         addSubview(label)
-        
-        rectHandler?(bgRect)
     }
 }
