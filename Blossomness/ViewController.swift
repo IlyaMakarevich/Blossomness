@@ -16,7 +16,7 @@ class ViewController: UIViewController {
     @IBOutlet private weak var classificationLabel: UILabel!
     
     
-    private var cameraOutputSnapshot: UIImage!
+    private var cameraOutput: CIImage!
     
     //MARK: - Vision Properties
     var visionRecognitionModel: VNCoreMLModel?
@@ -70,41 +70,44 @@ class ViewController: UIViewController {
         super.viewDidAppear(animated)
         boundingBoxView.rectHandler = { [weak self] rect in
             guard let rect = rect, let self = self else { return }
-            guard let cameraOutputSnapshot = self.cameraOutputSnapshot else { return }
-            self.smallPreviewImageView.image = self.cropImage(cameraOutputSnapshot, toRect: rect, viewWidth: 100, viewHeight: 100)
+            self.smallPreviewImageView.image = self.cutScreenshot(rect: rect)
         }
     }
     
-//    private func cutScreenshot(rect: CGRect) -> UIImage? {
-//        #warning("здесь cropped всегда nil непонятно почему")
-//        if let cropped = cameraOutputSnapshot.cgImage?.cropping(to: rect) {
-//            return UIImage(cgImage: cropped)
-//        } else {
-//            return nil
-//        }
-// /   }
-    
-    func cropImage(_ inputImage: UIImage, toRect cropRect: CGRect, viewWidth: CGFloat, viewHeight: CGFloat) -> UIImage?
-    {
-        let imageViewScale = max(inputImage.size.width / viewWidth,
-                                 inputImage.size.height / viewHeight)
-
-        // Scale cropRect to handle images larger than shown-on-screen size
-        let cropZone = CGRect(x:cropRect.origin.x * imageViewScale,
-                              y:cropRect.origin.y * imageViewScale,
-                              width:cropRect.size.width * imageViewScale,
-                              height:cropRect.size.height * imageViewScale)
-
-        // Perform cropping in Core Graphics
-        guard let cutImageRef: CGImage = inputImage.cgImage?.cropping(to:cropZone)
-        else {
+    private func cutScreenshot(rect: CGRect) -> UIImage? {
+        guard let cameraOutput = self.cameraOutput else { return nil }
+        if let fullCGImage = convertCIImageToCGImage(inputImage: cameraOutput) {
+            if let cropped = fullCGImage.cropping(to: rect) {
+                return UIImage(cgImage: cropped)
+            } else {
+                return nil
+            }
+        } else {
             return nil
         }
-
-        // Return image to UIImage
-        let croppedImage: UIImage = UIImage(cgImage: cutImageRef)
-        return croppedImage
     }
+    
+//    func cropImage(_ inputImage: UIImage, toRect cropRect: CGRect, viewWidth: CGFloat, viewHeight: CGFloat) -> UIImage?
+//    {
+//        let imageViewScale = max(inputImage.size.width / viewWidth,
+//                                 inputImage.size.height / viewHeight)
+//
+//        // Scale cropRect to handle images larger than shown-on-screen size
+//        let cropZone = CGRect(x:cropRect.origin.x * imageViewScale,
+//                              y:cropRect.origin.y * imageViewScale,
+//                              width:cropRect.size.width * imageViewScale,
+//                              height:cropRect.size.height * imageViewScale)
+//
+//        // Perform cropping in Core Graphics
+//        guard let cutImageRef: CGImage = inputImage.cgImage?.cropping(to:cropZone)
+//        else {
+//            return nil
+//        }
+//
+//        // Return image to UIImage
+//        let croppedImage: UIImage = UIImage(cgImage: cutImageRef)
+//        return croppedImage
+//    }
     
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
@@ -183,12 +186,20 @@ class ViewController: UIViewController {
     func resizePreviewLayer() {
         videoCapture.previewLayer?.frame = previewView.bounds
     }
+    
+    func convertCIImageToCGImage(inputImage: CIImage) -> CGImage? {
+        let context = CIContext(options: nil)
+        if let cgImage = context.createCGImage(inputImage, from: inputImage.extent) {
+            return cgImage
+        }
+        return nil
+    }
 }
 
 extension ViewController: VideoCaptureDelegate {
     func videoCapture(_ capture: VideoCapture, pixelBuffer: CVPixelBuffer?, timestamp: CMTime) {
         if !self.isInferencing, let pixelBuffer = pixelBuffer {
-            cameraOutputSnapshot = UIImage(ciImage: CIImage(cvPixelBuffer: pixelBuffer))
+            cameraOutput = CIImage(cvPixelBuffer: pixelBuffer)
             self.isInferencing = true
             self.runRequest(pixelBuffer: pixelBuffer)
         }
