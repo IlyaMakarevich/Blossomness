@@ -65,6 +65,7 @@ class ViewController: UIViewController {
     @IBAction func resetAction(_ sender: Any) {
         smallPreviewImageView.image = nil
         status = .notStarted
+        classificationLabel.text = ""
     }
     
     override func viewDidLoad() {
