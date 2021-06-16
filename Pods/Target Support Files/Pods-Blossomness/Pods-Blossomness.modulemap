@@ -1,0 +1,6 @@
+framework module Pods_Blossomness {
+  umbrella header "Pods-Blossomness-umbrella.h"
+
+  export *
+  module * { export * }
+}

@@ -37,7 +37,7 @@ class BoundingBoxView: UIView {
         for prediction in predictions {
             createLabelAndBox(prediction: prediction)
             
-            let scale = CGAffineTransform.identity.scaledBy(x: 1080, y: 1920)
+            let scale = CGAffineTransform.identity.scaledBy(x: 1080, y: 1920) // размер фото
             let transform = CGAffineTransform(scaleX: 1, y: -1).translatedBy(x: 0, y: -1)
             let rect = prediction.boundingBox.applying(transform).applying(scale)
             rectHandler?(rect)

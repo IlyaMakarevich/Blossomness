@@ -8,6 +8,16 @@
 import UIKit
 import AVFoundation
 import Vision
+import SnapKit
+
+
+struct PLNLocalRecognizerPlantModel {
+    let name: String
+    let percentage: Double
+}
+
+typealias LocalRecognizeResultHandler = ((_ result: [PLNLocalRecognizerPlantModel]) -> Void)
+
 
 class ViewController: UIViewController {
     @IBOutlet private weak var previewView: UIView!
@@ -15,7 +25,9 @@ class ViewController: UIViewController {
     @IBOutlet private weak var smallPreviewImageView: UIImageView!
     @IBOutlet private weak var classificationLabel: UILabel!
     
-    
+    private let limit = 6
+    private var results: [[PLNLocalRecognizerPlantModel]] = []
+
     private var cameraOutput: CIImage!
     
     //MARK: - Vision Properties
@@ -50,11 +62,19 @@ class ViewController: UIViewController {
       }
     }
     
+    @IBAction func resetAction(_ sender: Any) {
+        smallPreviewImageView.image = nil
+        status = .notStarted
+    }
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         
         setupRecognitionModelAndRequest()
         setupVideoPreview()
+        
+        smallPreviewImageView.alpha = 0
+        classificationLabel.alpha = 0
     }
     
     override func didReceiveMemoryWarning() {
@@ -70,7 +90,9 @@ class ViewController: UIViewController {
         super.viewDidAppear(animated)
         boundingBoxView.rectHandler = { [weak self] rect in
             guard let rect = rect, let self = self else { return }
-            self.smallPreviewImageView.image = self.cutScreenshot(rect: rect)
+            if self.status != .searched {
+                self.smallPreviewImageView.image = self.cutScreenshot(rect: rect)
+            }
         }
     }
     
@@ -78,6 +100,9 @@ class ViewController: UIViewController {
         guard let cameraOutput = self.cameraOutput else { return nil }
         if let fullCGImage = convertCIImageToCGImage(inputImage: cameraOutput) {
             if let cropped = fullCGImage.cropping(to: rect) {
+                if status != .searched {
+                    updateClassifications(for: UIImage(cgImage: cropped))
+                }
                 return UIImage(cgImage: cropped)
             } else {
                 return nil
@@ -101,13 +126,13 @@ class ViewController: UIViewController {
             //setup request only once and run it multiple times
             recRequest = VNCoreMLRequest(model: visionRecognitionModel!, completionHandler: { (request, error) in
                 if let predictions = request.results as? [VNRecognizedObjectObservation] {
-                    let pottedPlantPredictions = predictions.filter {$0.labels.first?.identifier == "pottedplant"}
+                    let pottedPlantPrediction = predictions.first { $0.labels.first?.identifier == "pottedplant" }
                         DispatchQueue.main.async {
-                            if !pottedPlantPredictions.isEmpty {
-                                self.boundingBoxView.predictedObjects = predictions
+                            if let pottedPlantPrediction = pottedPlantPrediction {
+                                self.boundingBoxView.predictedObjects = [pottedPlantPrediction]
                             } else {
                                 self.boundingBoxView.predictedObjects = []
-                                self.smallPreviewImageView.image = nil
+                                //self.smallPreviewImageView.image = nil
                             }
                             self.isInferencing = false
                         }
@@ -173,6 +198,17 @@ class ViewController: UIViewController {
         }
         return nil
     }
+    
+    private func startAnimation() {
+        smallPreviewImageView.snp.remakeConstraints { make in
+            make.size.equalTo(150)
+        }
+        UIView.animate(withDuration: 1.0) {
+            self.smallPreviewImageView.alpha = 1
+            self.classificationLabel.alpha = 1
+            self.view.layoutIfNeeded()
+        }
+    }
 }
 
 extension ViewController: VideoCaptureDelegate {
@@ -192,13 +228,25 @@ extension ViewController: VideoCaptureDelegate {
             fatalError("Model failed to initialise.")
         }
         //TODO: Define the VNCoreMLRequest
-        let request = VNCoreMLRequest(model: model) { (req, err) in
-            guard let result = req.results as? [VNClassificationObservation] else {
-                fatalError("Request failed.")
-            }
-            if let firstResult = result.first {
-                let description = String(format: "\(firstResult.identifier) - %.2f", firstResult.confidence)
-                self.classificationLabel.text = description
+        let request = VNCoreMLRequest(model: model) { request, _  in
+            self.processObservations(for: request) { [weak self] (models) in
+                guard let self = self else { return }
+                guard !models.isEmpty else { return }
+                                
+                let detectedPlantClass = models[0]
+                if detectedPlantClass.name == "unknown-plant" || detectedPlantClass.name == "notplant" {
+                    self.classificationLabel.text = "searching..."
+                } else if detectedPlantClass.percentage >= 90 {
+                    self.status = .searched
+                    self.classificationLabel.text = detectedPlantClass.name
+                    self.startAnimation()
+                } else {
+                    self.classificationLabel.text = "searching..."
+                }
+                
+                DispatchQueue.main.asyncAfter(deadline: .now() + 3.0) {
+                    //self.status = .notStarted
+                }
             }
             
         }
@@ -209,6 +257,25 @@ extension ViewController: VideoCaptureDelegate {
             try handler.perform([request])
         } catch {
             print("Handler failed.")
+        }
+    }
+    
+    private func processObservations(for request: VNRequest, completion: LocalRecognizeResultHandler?) {
+        if let observResult = request.results, let observList = observResult as? [VNClassificationObservation] {
+            let observations = observList.prefix(limit)
+            let results = observations.map { observation -> PLNLocalRecognizerPlantModel in
+                let formatter = NumberFormatter()
+                formatter.maximumFractionDigits = 1
+                return PLNLocalRecognizerPlantModel(name: observation.identifier, percentage: Double(observation.confidence * 100))
+            }
+
+            DispatchQueue.main.async {
+                completion?(results)
+            }
+        } else {
+            DispatchQueue.main.async {
+                completion?([])
+            }
         }
     }
     
